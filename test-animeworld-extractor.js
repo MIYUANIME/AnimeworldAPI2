@@ -57,15 +57,14 @@ async function getAnimeVideoUrl(animeTitle, season, episode) {
         // Process the complete response
         response.on('end', () => {
           try {
-            // Look for the video URL pattern in the HTML
-            // This regex looks for the short.icu video URL pattern
-            const videoUrlRegex = /https:\/\/short\.icu\/([a-zA-Z0-9]+)/g;
-            const matches = [...data.matchAll(videoUrlRegex)];
+            // Look for the iframe with data-src attribute containing the API URL
+            const iframeRegex = /<iframe[^>]*data-src="([^"]+)"[^>]*>/i;
+            const iframeMatch = data.match(iframeRegex);
             
-            if (matches.length > 0) {
-              // Return the first match (you might want to adjust this logic based on your needs)
-              console.log(`Found ${matches.length} video URL(s)`);
-              resolve(matches[0][0]);
+            if (iframeMatch && iframeMatch[1]) {
+              // Return the API URL from the data-src attribute
+              console.log(`Found API URL in iframe data-src`);
+              resolve(iframeMatch[1]);
             } else {
               // Try a more general pattern for video URLs
               const generalVideoRegex = /https?:\/\/[^\s]*\.(mp4|webm|m3u8)/gi;
