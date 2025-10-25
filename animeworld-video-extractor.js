@@ -3,13 +3,21 @@
  * @param {string} animeTitle - The title of the anime
  * @param {number} season - The season number
  * @param {number} episode - The episode number
+ * @param {number} option - The language option (0=Hindi, 1=Tamil, 2=Malayalam, 3=English, 4=Japanese)
  * @returns {Promise<string|null>} - The video URL or null if not found
  */
-async function getAnimeVideoUrl(animeTitle, season, episode) {
+async function getAnimeVideoUrl(animeTitle, season, episode, option = 1) {
   try {
+    if (!animeTitle || !season || !episode) {
+      throw new Error('Missing required parameters: animeTitle, season, and episode are required');
+    }
+    
     // Construct the episode URL
     const formattedTitle = animeTitle.toLowerCase().replace(/\s+/g, '-');
     const episodeUrl = `https://watchanimeworld.in/episode/${formattedTitle}-${season}x${episode}/`;
+    
+    console.log(`Fetching episode: ${animeTitle} Season ${season} Episode ${episode}`);
+    console.log(`URL: ${episodeUrl}`);
     
     // Fetch the episode page
     const response = await fetch(episodeUrl, {
@@ -24,13 +32,16 @@ async function getAnimeVideoUrl(animeTitle, season, episode) {
     
     const html = await response.text();
     
-    // Look for the iframe with data-src attribute containing the API URL
-    const iframeRegex = /<iframe[^>]*data-src="([^"]+)"[^>]*>/i;
-    const iframeMatch = html.match(iframeRegex);
+    // Look for the iframe with data-src attribute in options-1 div
+    const optionsRegex = /<div id="options-1"[^>]*>.*?<iframe[^>]*data-src="([^"]+)"[^>]*>.*?<\/div>/is;
+    const optionsMatch = html.match(optionsRegex);
     
-    if (iframeMatch && iframeMatch[1]) {
-      // Return the API URL from the data-src attribute
-      return iframeMatch[1];
+    if (optionsMatch && optionsMatch[1]) {
+      // Get the API URL from the data-src attribute
+      const apiUrl = optionsMatch[1].trim();
+      
+      // Extract the URL for the specified option
+      return extractOptionUrl(apiUrl, option);
     }
     
     // If not found in HTML, we might need to check network requests
@@ -44,6 +55,74 @@ async function getAnimeVideoUrl(animeTitle, season, episode) {
     return null;
   }
 }
+
+/**
+ * Extracts the URL for the specified language option from the data parameter in the API URL
+ * @param {string} apiUrl - The API URL with the data parameter
+ * @param {number} option - The language option (0=Hindi, 1=Tamil, 2=Malayalam, 3=English, 4=Japanese)
+ * @returns {string|null} - The URL for the specified option or null if not found
+ */
+function extractOptionUrl(apiUrl, option = 1) {
+  try {
+    // Extract the data parameter from the API URL
+    const dataParam = new URL(apiUrl).searchParams.get('data');
+    
+    if (!dataParam) {
+      return null;
+    }
+    
+    // Decode the data parameter (it's base64 encoded JSON)
+    // First decode from base64 to string
+    const decodedData = atob(dataParam);
+    
+    // Parse the JSON data
+    const jsonData = JSON.parse(decodedData);
+    
+    // Get the URL for the specified option
+    if (jsonData && jsonData.length > option && jsonData[option] && jsonData[option].link) {
+      console.log(`Found ${jsonData[option].language} language option`);
+      return jsonData[option].link;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting URL for option:', error);
+    return null;
+  }
+}
+
+/**
+ * Extracts the option 1 URL from the data parameter in the API URL (legacy function)
+ * @param {string} apiUrl - The API URL with the data parameter
+ * @returns {string|null} - The option 1 URL or null if not found
+ */
+function extractOption1Url(apiUrl) {
+  return extractOptionUrl(apiUrl, 1);
+}
+
+/**
+ * Directly extracts the option 1 URL from a data string without requiring anime parameters
+ * @param {string} dataString - The data string from the iframe's data-src attribute
+ * @returns {string|null} - The option 1 URL or null if not found
+ */
+function getOption1UrlFromData(dataString) {
+  try {
+    // Create a mock URL to use the extractOption1Url function
+    const mockUrl = `https://watchanimeworld.in/api/player1.php?data=${dataString}`;
+    return extractOption1Url(mockUrl);
+  } catch (error) {
+    console.error('Error extracting option 1 URL from data:', error);
+    return null;
+  }
+}
+
+// Export functions for testing and usage
+export {
+  getAnimeVideoUrl,
+  extractOptionUrl,
+  extractOption1Url,
+  getOption1UrlFromData
+};
 
 /**
  * Alternative approach using Puppeteer for more complex scraping
@@ -152,5 +231,4 @@ export default async function handler(req, res) {
 }
 */
 
-// Export the main function
-export { getAnimeVideoUrl };
+// Exports are handled at line 85

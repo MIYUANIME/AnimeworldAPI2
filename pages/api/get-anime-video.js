@@ -37,27 +37,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Extract the video URL using our function
-    const videoUrl = await getAnimeVideoUrl(animeTitle, seasonNum, episodeNum);
+    // Extract the Hindi video URL (option 0) using our function
+    const videoUrl = await getAnimeVideoUrl(animeTitle, seasonNum, episodeNum, 0);
     
     if (!videoUrl) {
       return res.status(404).json({ 
-        error: 'Video not found for the specified episode.' 
+        error: 'Hindi video not found for the specified episode.' 
       });
     }
     
-    // Return the video URL
+    // Return the video URL in a more structured API format
     res.status(200).json({ 
       success: true,
-      animeTitle,
-      season: seasonNum,
-      episode: episodeNum,
-      videoUrl 
+      data: {
+        anime: animeTitle,
+        season: seasonNum,
+        episode: episodeNum,
+        language: "Hindi",
+        videoUrl: videoUrl
+      }
     });
   } catch (error) {
     console.error('Error fetching video URL:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch video URL. Please try again later.' 
+      success: false,
+      error: 'Failed to fetch Hindi video URL. Please try again later.' 
     });
   }
 }

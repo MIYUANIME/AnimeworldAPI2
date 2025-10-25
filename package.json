@@ -1,26 +1,12 @@
 {
-  "name": "animeworld-video-extractor",
+  "name": "animeworld-api",
   "version": "1.0.0",
-  "description": "Extract video URLs from AnimeWorld website",
+  "description": "API for extracting video URLs from AnimeWorld",
   "main": "animeworld-video-extractor.js",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "node test-animeworld-extractor.js",
-    "test:example": "node test-animeworld-extractor.js naruto 1 1"
+    "test": "node test-option1-extractor.js"
   },
-  "keywords": [
-    "anime",
-    "video",
-    "extractor",
-    "animeworld"
-  ],
-  "author": "AnimeWorldAPI",
-  "license": "MIT",
-  "dependencies": {
-    "next": "^13.5.11",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  }
+  "author": "",
+  "license": "ISC"
 }

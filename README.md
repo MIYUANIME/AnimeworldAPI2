@@ -1,6 +1,6 @@
-# AnimeWorld Video Extractor
+# AnimeWorld Hindi Video API
 
-This project provides a solution for extracting video URLs from the AnimeWorld website (watchanimeworld.in) and playing them in a Next.js application.
+This project provides a specialized API for extracting Hindi-dubbed anime video URLs from the AnimeWorld website (watchanimeworld.in) and playing them in a Next.js application.
 
 ## Project Structure
 
@@ -46,6 +46,48 @@ To start the localhost:3000 server:
 
 ```bash
 npm run dev
+```
+
+## API Documentation
+
+### Get Hindi Anime Video URL
+
+This API endpoint returns Hindi-dubbed video URLs for anime episodes.
+
+**Endpoint:** `/api/get-anime-video`
+
+**Method:** GET
+
+**Parameters:**
+- `animeTitle` (required): The title of the anime (e.g., "naruto")
+- `season` (required): Season number (must be a positive integer)
+- `episode` (required): Episode number (must be a positive integer)
+
+**Response Format:**
+```json
+{
+  "success": true,
+  "data": {
+    "anime": "naruto",
+    "season": 1,
+    "episode": 1,
+    "language": "Hindi",
+    "videoUrl": "https://example.com/video-url"
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "Error message"
+}
+```
+
+**Example Request:**
+```
+GET /api/get-anime-video?animeTitle=naruto&season=1&episode=1
 ```
 
 This will start the Next.js development server on http://localhost:3000
